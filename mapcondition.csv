@@ -1,0 +1,17 @@
+Edge orientation,Target location,Edge section,Side section
+Horizontal,Corner,Top,Non-Dominant
+Horizontal,Non-Corner,Top,Non-Dominant
+Horizontal,Non-Corner,Top,Dominant
+Horizontal,Corner,Top,Dominant
+Vertical,Corner,Top,Non-Dominant
+Vertical,Non-Corner,Top,Non-Dominant
+Vertical,Non-Corner,Bottom,Non-Dominant
+Vertical,Corner,Bottom,Non-Dominant
+Horizontal,Corner,Bottom,Non-Dominant
+Horizontal,Non-Corner,Bottom,Non-Dominant
+Horizontal,Non-Corner,Bottom,Dominant
+Horizontal,Corner,Bottom,Dominant
+Vertical,Corner,Bottom,Dominant
+Vertical,Non-Corner,Bottom,Dominant
+Vertical,Non-Corner,Top,Dominant
+Vertical,Corner,Top,Dominant
