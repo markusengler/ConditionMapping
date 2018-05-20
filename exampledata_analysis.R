@@ -29,6 +29,9 @@ for(i in 1:nrow(data)){
 data$ES <- as.factor(data$ES)
 data$SS <- as.factor(data$SS)
 
+
+
+
 #Graph Mean time vs IDE with grouping by Edge Orientation
 data_Edge <- data %>% group_by(EO) %>% summarise(
   Mean_Time = mean(MT),
