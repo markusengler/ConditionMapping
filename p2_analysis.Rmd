@@ -1,6 +1,8 @@
 ---
 title: "Project II Analysis"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -63,6 +65,12 @@ kable(head(data, n=5), caption="A look at some rows in the experiment data")
 # to address the first hypothesis, we group by Edge Orientation (Horizontal) and Edge Section (Top and Bottom)
 data_horizontal_edge <- data[data$EO == "Horizontal",]
 
+# Boxplot
+data_horizontal_edge %>%
+  ggplot(aes(x = ES, y = MT)) +
+  geom_boxplot() +
+  labs(title = "Box plots of edge section on movement time", x = "Edge Section", y = "Movement Time")
+
 # Violin plot  
 h1_violin_plot <-
   data_horizontal_edge %>%
@@ -72,13 +80,34 @@ h1_violin_plot <-
   labs(title = "Violin plots of edge section on movement time", x = "Edge Section", y = "Movement Time")
 
 h1_violin_plot + stat_summary(fun.y=mean, geom="point", size=2, color="red")
+
+# check t-test assumptions
+
+# Shapiro-Wilk normality test for top edge movement time
+top_edge_movement_time <- data_horizontal_edge[data_horizontal_edge$ES == "Top", c('MT')]$MT
+shapiro.test(top_edge_movement_time)
+
+# Shapiro-Wilk normality test for bottom edge movement time
+bottom_edge_movement_time <- data_horizontal_edge[data_horizontal_edge$ES == "Bottom", c('MT')]$MT
+shapiro.test(bottom_edge_movement_time)
+
+# Since the data does not seem to be distributed normally due to the p-values above, we will use the non parametric two-samples Wilcoxon rank test.
+wilcox.test(top_edge_movement_time, bottom_edge_movement_time, alternative = "two.sided")
+
+# With a p-value of 2.562e-15, we can conclude that the mean movement time for the top edge is significantly different than the mean movement time for the bottom edge. This means that it appears that the mean movement time to the top edge is faster than mean movement time to the bottom edge. This confirms our hypothesis.
 ```
 
 # Addressing our second hypothesis
 ##### H2: For left-handed participants it is faster to move to targets on the right edge of the screen rather than the left edge, whereas for the right-handed participants it is faster to move to targets at the left edge of the screen rather than the right edge.
 ```{r, message=FALSE}
-# to address the second hypothesis, we group by Edge Orientation (Vertical) and Side Section (Dominant and Non-dominant)
+# to address the second hypothesis, we group by Edge Orientation (Vertical) and Side Section (Dominant and Non-Dominant)
 data_vertical_edge <- data[data$EO == "Vertical",]
+
+# Boxplot
+data_vertical_edge %>%
+  ggplot(aes(x = SS, y = MT)) +
+  geom_boxplot() +
+  labs(title = "Box plots of side section on movement time", x = "Side Section", y = "Movement Time")
 
 # Violin plot  
 h2_violin_plot <-
@@ -89,4 +118,19 @@ h2_violin_plot <-
   labs(title = "Violin plots of side section on movement time", x = "Side Section", y = "Movement Time")
 
 h2_violin_plot + stat_summary(fun.y=mean, geom="point", size=2, color="red")
+
+# check t-test assumptions
+
+# Shapiro-Wilk normality test for dominant edge movement time
+dom_edge_movement_time <- data_vertical_edge[data_vertical_edge$SS == "Dominant", c('MT')]$MT
+shapiro.test(dom_edge_movement_time)
+
+# Shapiro-Wilk normality test for non-dominant edge movement time
+nondom_edge_movement_time <- data_vertical_edge[data_vertical_edge$SS == "Non-Dominant", c('MT')]$MT
+shapiro.test(nondom_edge_movement_time)
+
+# Since the data does not seem to be distributed normally due to the p-values above, we will use the non parametric two-samples Wilcoxon rank test.
+wilcox.test(dom_edge_movement_time, nondom_edge_movement_time, alternative = "two.sided")
+
+# With a p-value of 0.01276, we can conclude that the mean movement time for the dominant edge is significantly different than the mean movement time for the non-dominant edge. This means that it appears that the mean movement time to the dominant edge is slightly faster than mean movement time to the non-dominant edge. This contradicts our hypothesis.
 ```
