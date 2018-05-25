@@ -57,8 +57,9 @@ for(i in 1:nrow(data)){
 # calculating error rates
 error_rate_list <- unique(data$participantId)
 error_rate_tb <- data.frame(Reduce(rbind, error_rate_list))
-colnames(error_rate_tb)[1] <- "participantId"
+colnames(error_rate_tb)[1] <- "Participant_ID"
 error_rate_tb[, "error rate"] <- NA
+
 
 for (i in 1:nrow(error_rate_tb)){
   # total trials is 288
@@ -66,9 +67,16 @@ for (i in 1:nrow(error_rate_tb)){
   error_rate_tb[i,]$'error rate' <- error_rate
 }
 
+MT <- aggregate(data$MT, list("ID"= data$participantId), mean)
+colnames(MT) <- c("Participant_ID","MT")
+
+data_h2 <- merge(error_rate_tb,MT,by="Participant_ID")
+
+
 kable(head(data, n=5), caption="A look at some rows in the experiment data", align = c("l"))
 
 kable(error_rate_tb, caption="The error rate of each participant", align = c("l"))
+
 ```
 
 # Visualizing the data
@@ -115,4 +123,62 @@ wilcox.test(top_edge_movement_time, bottom_edge_movement_time, alternative = "tw
 ##### H2: For left-handed participants it is faster to move to targets on the right edge of the screen rather than the left edge, whereas for the right-handed participants it is faster to move to targets at the left edge of the screen rather than the right edge.
 
 We could not test our second hypothesis due to not having the sufficient data collected (having left-handed participants). We however, will do some exploratory data analysis instead.
+
+#Visualize the data for interaction between Error rates and MT with by Participant ID
+```{r}
+data_vertical_edge <- data[data$EO == "Vertical",]
+
+p_data <- 
+  data_h2 %>% 
+  ggplot(aes(x = `error rate`, y = MT, color = Participant_ID)) +
+  stat_summary(fun.y=mean, geom="point", size=2, color="red") +
+  geom_line()
+p_data
+
+```
+#Code for Learning effect
+```{r}
+learning_dominant <- data_vertical_edge %>% filter(SS == "Dominant")
+learning_non_dominant <- data_vertical_edge %>% filter(SS == "Non-Dominant")
+ggplot(learning_dominant, aes(x=participantId, y=MT, group=participantId)) + geom_boxplot() + ggtitle("Dominant Learning")
+ggplot(learning_non_dominant, aes(x=participantId, y=MT, group=participantId)) + geom_boxplot() + ggtitle("Non-Dominant Learning")
+
+
+```
+
+#Code for Interaction effect between Error and Side Section
+```{r}
+#Asses the above linear model with goodness of fit ANOVA
+m_ss_er <- lm(MT ~ SS * error, data = data)
+anova(m_ss_er)
+
+#As the interaction effect is significant
+# 1. construct the matrix for each variable
+ss_mat <- contrMat(table(data$SS), "Tukey")
+
+# 2. pad other columns with zero
+t_rows <- cbind(ss_mat,       (ss_mat * 0))
+b_rows <- cbind((ss_mat * 0),   ss_mat)
+
+# 3. add hypothesis labels as row names
+rownames(t_rows) <- paste(levels(data$ES)[1],  rownames(t_rows), sep =": ")
+rownames(b_rows)  <- paste(levels(data$ES)[2],  rownames(b_rows),  sep =": ")
+
+# 4. concatenate them together
+contrast_matrix <- rbind(
+  t_rows,
+  b_rows
+)
+contrast_matrix
+
+# We will also need a model *only* with the interaction term
+m_interaction <- update(m_ss_er, .~. - SS - error -1)
+
+# use the contrast matrix in glht() in place of "mcp()"
+pairwise_interaction <- glht(m_interaction, linfct = contrast_matrix)  
+p_pairwise_interaction <- 
+  tidy(confint(pairwise_interaction)) %>% 
+  plot_glht()
+p_pairwise_interaction
+```
 
