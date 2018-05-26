@@ -108,12 +108,14 @@ h1_violin_plot + stat_summary(fun.y=mean, geom="point", size=2, color="red")
 # Shapiro-Wilk normality test for top edge movement time
 top_edge_movement_time <- data_horizontal_edge[data_horizontal_edge$ES == "Top", c('MT')]$MT
 shapiro.test(top_edge_movement_time)
+shapiro.test(log(top_edge_movement_time))
 
 # Shapiro-Wilk normality test for bottom edge movement time
 bottom_edge_movement_time <- data_horizontal_edge[data_horizontal_edge$ES == "Bottom", c('MT')]$MT
 shapiro.test(bottom_edge_movement_time)
+shapiro.test(log(bottom_edge_movement_time))
 
-# Since the data does not seem to be distributed normally due to the p-values above, we will use the non parametric two-samples Wilcoxon rank test.
+# Since the data does not seem to be distributed normally due to the p-values above, even with a log transform, we will use the non parametric two-samples Wilcoxon rank test.
 wilcox.test(top_edge_movement_time, bottom_edge_movement_time, alternative = "two.sided")
 
 # With a p-value of 2.562e-15, we can conclude that the mean movement time for the top edge is significantly different than the mean movement time for the bottom edge. This means that it appears that the mean movement time to the top edge is faster than mean movement time to the bottom edge. This confirms our hypothesis.
