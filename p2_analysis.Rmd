@@ -54,7 +54,7 @@ for(i in 1:nrow(data)){
   data[i,]$SS <- row_to_map$`Side section`
 }
 
-# calculating error rates
+# calculating error rates for each participant
 error_rate_list <- unique(data$participantId)
 error_rate_tb <- data.frame(Reduce(rbind, error_rate_list))
 colnames(error_rate_tb)[1] <- "Participant_ID"
@@ -66,6 +66,9 @@ for (i in 1:nrow(error_rate_tb)){
   error_rate <- length(data[data$participantId == i & data$error == "true", c('error')]$error) / 288
   error_rate_tb[i,]$'error rate' <- error_rate
 }
+
+# Calculate error rate in total (total trials 2304)
+amount_errors <- length(data[data$error == "true", c('error')]$error) / 2304
 
 MT <- aggregate(data$MT, list("ID"= data$participantId), mean)
 colnames(MT) <- c("Participant_ID","MT")
