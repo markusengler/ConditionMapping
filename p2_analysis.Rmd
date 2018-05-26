@@ -80,6 +80,15 @@ kable(head(data, n=5), caption="A look at some rows in the experiment data", ali
 
 kable(error_rate_tb, caption="The error rate of each participant", align = c("l"))
 
+
+# graph the mean time it takes the user to click the specified targets (ms) over the index of difficulty (ID) to get a sense of how much the amount of time taken to accomplish the task changes based on the ID
+plot_MT_ID <- data %>% ggplot(aes(x=ID, y=data$MT)) + geom_jitter() + geom_smooth(method = 'lm') + labs(y = "MT")
+plot_MT_ID 
+
+# Learning effect
+learning_effect_H1 <- data %>% group_by(participantId) %>% ggplot(aes(x=trialId, y=data$MT, color = participantId)) + labs(y = "MT") + geom_jitter(alpha = 1/10) + geom_smooth() 
+
+learning_effect_H1
 ```
 
 # Visualizing the data
