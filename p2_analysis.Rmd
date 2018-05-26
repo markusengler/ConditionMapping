@@ -68,7 +68,7 @@ for (i in 1:nrow(error_rate_tb)){
 }
 
 # Calculate error rate in total (total trials 2304)
-amount_errors <- length(data[data$error == "true", c('error')]$error) / 2304
+amount_errors <- length(data[data$error == "true", c('error')]$error) / 2304 * 100
 
 MT <- aggregate(data$MT, list("ID"= data$participantId), mean)
 colnames(MT) <- c("Participant_ID","MT")
@@ -185,5 +185,84 @@ p_pairwise_interaction <-
   tidy(confint(pairwise_interaction)) %>% 
   plot_glht()
 p_pairwise_interaction
+```
+#Adressing H3, It is faster to move to Horizontal direction than Vertical direction
+```{r, message=FALSE}
+# to address the third hypothesis, we group by Side Section (Dominant) and  Edge Orientation.
+data_dominant_edge <- data[data$SS == "Dominant",]
+# Boxplot
+data_dominant_edge %>%
+  ggplot(aes(x = EO, y = MT)) +
+  geom_boxplot() +
+  labs(title = "Box plots of edge orientation on movement time", x = "Edge Orientation", y = "Movement Time")
+
+# Violin plot  
+h3_violin_plot <-
+  data_dominant_edge %>%
+  ggplot(aes(x = EO, y = MT)) +
+  geom_violin() +
+  geom_point(color = "lightgray") +
+  labs(title = "Violin plots of edge orientation on movement time", x = "Edge Orientation", y = "Movement Time")
+
+h3_violin_plot + stat_summary(fun.y=mean, geom="point", size=2, color="red")
+
+# check t-test assumptions
+
+# Shapiro-Wilk normality test for top edge movement time
+horizontal_movement_time <- data_dominant_edge[data_dominant_edge$EO == "Horizontal", c('MT')]$MT
+shapiro.test(horizontal_movement_time)
+shapiro.test(log(horizontal_movement_time))
+
+# Shapiro-Wilk normality test for bottom edge movement time
+vertical_movement_time <- data_dominant_edge[data_dominant_edge$EO == "Vertical", c('MT')]$MT
+shapiro.test(vertical_movement_time)
+shapiro.test(log(vertical_movement_time))
+
+# Since the data does not seem to be distributed normally due to the p-values above, we will use the non parametric two-samples Wilcoxon rank test.
+wilcox.test(horizontal_movement_time, vertical_movement_time, alternative = "two.sided")
+
+# With a p-value of 2.2e-16, we can conclude that the mean movement time for the horizontal side is significantly different than the mean movement time for the vertical side. For Dominant side of the partcipants, it appears that the mean movement time to the horizontal axis is faster than mean movement time to the vertical axis. 
+```
+
+```{r, message=FALSE}
+# to address the third hypothesis, we group by Side Section (Non-Dominant) and  Edge Orientation.
+data_nondominant_edge <- data[data$SS == "Non-Dominant",]
+# Boxplot
+data_nondominant_edge %>%
+  ggplot(aes(x = EO, y = MT)) +
+  geom_boxplot() +
+  labs(title = "Box plots of edge orientation on movement time", x = "Edge Orientation", y = "Movement Time")
+
+# Violin plot  
+h3_violin_plot <-
+  data_nondominant_edge %>%
+  ggplot(aes(x = EO, y = MT)) +
+  geom_violin() +
+  geom_point(color = "lightgray") +
+  labs(title = "Violin plots of edge orientation on movement time", x = "Edge Orientation", y = "Movement Time")
+
+h3_violin_plot + stat_summary(fun.y=mean, geom="point", size=2, color="red")
+
+# check t-test assumptions
+
+# Shapiro-Wilk normality test for top edge movement time
+horizontal_movement_time <- data_nondominant_edge[data_horizontal_edge$EO == "Horizontal", c('MT')]$MT
+shapiro.test(horizontal_movement_time)
+
+# Shapiro-Wilk normality test for bottom edge movement time
+horizontal_movement_time <- data_nondominant_edge[data_vertical_edge$EO == "Vertical", c('MT')]$MT
+shapiro.test(horizontal_movement_time)
+shapiro.test(log(horizontal_movement_time))
+
+vertical_movement_time <- data_nondominant_edge[data_dominant_edge$EO == "Vertical", c('MT')]$MT
+shapiro.test(vertical_movement_time)
+shapiro.test(log(vertical_movement_time))
+
+# Since the data does not seem to be distributed normally due to the p-values above, we will use the non parametric two-samples Wilcoxon rank test.
+wilcox.test(horizontal_movement_time, vertical_movement_time, alternative = "two.sided")
+
+# With a p-value of 2.2e-16, we can conclude that the mean movement time for the horizontal axis is significantly different than the mean movement time for the vertical axis. For Non-Dominant side of the partcipants, it appears that the mean movement time to the horizontal axis has no significant difference as compared to dominant side of the participant, But faster than mean movement time to the vertical axis. Whereas the mean movement time of non dominant side  is significantly less than the mean movement time of dominant side of the participant for vertical axis.
+
+#Hence the above arguments proves our H3
 ```
 
